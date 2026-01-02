@@ -1,0 +1,47 @@
+name: Publish Quarto Site
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Install Poetry
+              run: |
+                  curl -sSL https://install.python-poetry.org | python3 -
+                  echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Install dependencies
+              run: |
+                  poetry config virtualenvs.in-project true
+                  poetry install --no-interaction --no-root
+
+            - name: Install Quarto
+              uses: quarto-dev/quarto-actions/setup@v2
+              with:
+                  version: "latest"
+
+            - name: Render site
+              run: poetry run quarto render
+
+              # Example GitHub Pages deploy (optional)
+              # - name: Upload artifact
+              #   uses: actions/upload-pages-artifact@v3
+              #   with:
+              #     path: _site
+              #
+              # - name: Deploy to GitHub Pages
+              #   if: github.ref == 'refs/heads/main'
+              #   uses: actions/deploy-pages@v4
